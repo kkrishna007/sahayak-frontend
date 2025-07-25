@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'student_attendance_page.dart';
 import 'student_performance_page.dart';
 import 'teaching_suggestions_page.dart';
+import 'attendance_taker_page.dart';
 
 class PrabandhanSaathiPage extends StatelessWidget {
   const PrabandhanSaathiPage({super.key});
@@ -117,11 +118,85 @@ class PrabandhanSaathiPage extends StatelessWidget {
                         Icons.how_to_reg,
                         const Color(0xFF4CAF50),
                         () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const StudentAttendancePage(),
+                          showModalBottomSheet(
+                            context: context,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(20)),
                             ),
+                            builder: (context) {
+                              return Padding(
+                                padding: const EdgeInsets.all(24),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    ElevatedButton.icon(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            const Color(0xFF4CAF50),
+                                        minimumSize: const Size.fromHeight(48),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(12)),
+                                      ),
+                                      icon: const Icon(Icons.camera_alt),
+                                      label: const Text('Take Attendance'),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const AttendanceTakerPage(),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    const SizedBox(height: 16),
+                                    ElevatedButton.icon(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            const Color(0xFF2196F3),
+                                        minimumSize: const Size.fromHeight(48),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(12)),
+                                      ),
+                                      icon: const Icon(Icons.list_alt),
+                                      label: const Text('View Attendance'),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const StudentAttendancePage(),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    const SizedBox(height: 16),
+                                    ElevatedButton.icon(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            const Color(0xFFFF9800),
+                                        minimumSize: const Size.fromHeight(48),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(12)),
+                                      ),
+                                      icon: const Icon(Icons.warning),
+                                      label:
+                                          const Text('Raise Attendance Alert'),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                        // TODO: Implement Raise Attendance Alert
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           );
                         },
                       ),
