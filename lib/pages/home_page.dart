@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'pareeksha_guru/pareeksha_guru_page.dart';
 import 'prabandhan_saathi/prabandhan_saathi_page.dart';
 import 'sahayata_chat/sahayata_chat_page.dart';
+import 'shikshak_mitra/shikshak_mitra_dashboard.dart';
 import '../utils/translations.dart';
 
 class SahayakHomePage extends StatefulWidget {
@@ -210,7 +211,12 @@ class _SahayakHomePageState extends State<SahayakHomePage> {
                     const Color(0xFF4CAF50),
                     Icons.school,
                     AppTranslations.translate('ready', _currentLanguage),
-                    null,
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ShikshakMitraDashboard(),
+                      ),
+                    ),
                   ),
                   _buildFeatureCard(
                     context,
