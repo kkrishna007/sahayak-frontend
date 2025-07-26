@@ -1,9 +1,24 @@
 import 'package:flutter/material.dart';
 import 'pareeksha_guru/pareeksha_guru_page.dart';
 import 'prabandhan_saathi/prabandhan_saathi_page.dart';
+import 'sahayata_chat/sahayata_chat_page.dart';
+import '../utils/translations.dart';
 
-class SahayakHomePage extends StatelessWidget {
+class SahayakHomePage extends StatefulWidget {
   const SahayakHomePage({super.key});
+
+  @override
+  State<SahayakHomePage> createState() => _SahayakHomePageState();
+}
+
+class _SahayakHomePageState extends State<SahayakHomePage> {
+  String _currentLanguage = 'en';
+
+  void _toggleLanguage() {
+    setState(() {
+      _currentLanguage = _currentLanguage == 'en' ? 'hi' : 'en';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +28,7 @@ class SahayakHomePage extends StatelessWidget {
         backgroundColor: const Color(0xFF6B73FF),
         elevation: 0,
         title: const Text(
-          'Sahayak AI',
+          '',
           style: TextStyle(
             color: Colors.white,
             fontSize: 18,
@@ -21,6 +36,31 @@ class SahayakHomePage extends StatelessWidget {
           ),
         ),
         centerTitle: true,
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              color: Colors.white24,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: InkWell(
+              onTap: _toggleLanguage,
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: Text(
+                  _currentLanguage == 'en' ? 'हिंदी' : 'English',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -32,17 +72,18 @@ class SahayakHomePage extends StatelessWidget {
             ),
             child: Column(
               children: [
-                const Text(
-                  'Sahayak',
-                  style: TextStyle(
+                Text(
+                  AppTranslations.translate('sahayak', _currentLanguage),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const Text(
-                  'Your AI Teaching Assistant',
-                  style: TextStyle(
+                Text(
+                  AppTranslations.translate(
+                      'your_ai_teaching_assistant', _currentLanguage),
+                  style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 16,
                   ),
@@ -76,21 +117,23 @@ class SahayakHomePage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Mrs. Priya Sharma',
-                              style: TextStyle(
+                              AppTranslations.translate(
+                                  'mrs_priya_sharma', _currentLanguage),
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black87,
                               ),
                             ),
                             Text(
-                              'Shishu Vidhyalay',
-                              style: TextStyle(
+                              AppTranslations.translate(
+                                  'shishu_vidhyalay', _currentLanguage),
+                              style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey,
                               ),
@@ -107,9 +150,9 @@ class SahayakHomePage extends StatelessWidget {
                           color: const Color(0xFF4CAF50),
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Text(
-                          'Active',
-                          style: TextStyle(
+                        child: Text(
+                          AppTranslations.translate('active', _currentLanguage),
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -128,13 +171,15 @@ class SahayakHomePage extends StatelessWidget {
                     color: Colors.white24,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.smart_toy, color: Colors.white, size: 20),
-                      SizedBox(width: 8),
+                      const Icon(Icons.smart_toy,
+                          color: Colors.white, size: 20),
+                      const SizedBox(width: 8),
                       Text(
-                        'Aapka AI Sahayak',
-                        style: TextStyle(
+                        AppTranslations.translate(
+                            'aapka_ai_sahayak', _currentLanguage),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -158,20 +203,23 @@ class SahayakHomePage extends StatelessWidget {
                 children: [
                   _buildFeatureCard(
                     context,
-                    'Shikshak Mitra',
-                    'Teaching Companion',
+                    AppTranslations.translate(
+                        'shikshak_mitra', _currentLanguage),
+                    AppTranslations.translate(
+                        'teaching_companion', _currentLanguage),
                     const Color(0xFF4CAF50),
                     Icons.school,
-                    'Ready',
+                    AppTranslations.translate('ready', _currentLanguage),
                     null,
                   ),
                   _buildFeatureCard(
                     context,
-                    'Pareeksha Guru',
-                    'Exam Master',
+                    AppTranslations.translate(
+                        'pareeksha_guru', _currentLanguage),
+                    AppTranslations.translate('exam_master', _currentLanguage),
                     const Color(0xFFFF9800),
                     Icons.quiz,
-                    'Active',
+                    AppTranslations.translate('active', _currentLanguage),
                     () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -181,20 +229,29 @@ class SahayakHomePage extends StatelessWidget {
                   ),
                   _buildFeatureCard(
                     context,
-                    'Sahayata Chat',
-                    'Help Assistant',
-                    const Color(0xFF2196F3),
+                    AppTranslations.translate(
+                        'sahayata_chat', _currentLanguage),
+                    AppTranslations.translate(
+                        'help_assistant', _currentLanguage),
+                    const Color(0xFF0057E7), // Updated to match color palette
                     Icons.chat,
-                    'Live',
-                    null,
+                    AppTranslations.translate('live', _currentLanguage),
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SahayataChatPage(),
+                      ),
+                    ),
                   ),
                   _buildFeatureCard(
                     context,
-                    'Prabandhan Saathi',
-                    'Management Assistant',
+                    AppTranslations.translate(
+                        'prabandhan_saathi', _currentLanguage),
+                    AppTranslations.translate(
+                        'management_assistant', _currentLanguage),
                     const Color(0xFF9C27B0),
                     Icons.bar_chart,
-                    'Running',
+                    AppTranslations.translate('running', _currentLanguage),
                     () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -211,6 +268,22 @@ class SahayakHomePage extends StatelessWidget {
     );
   }
 
+  Color _getStatusColor(String status) {
+    // Map status text to colors
+    final Map<String, Color> statusColors = {
+      'Ready': const Color(0xFF4CAF50),
+      'तैयार': const Color(0xFF4CAF50),
+      'Active': const Color(0xFFFF9800),
+      'सक्रिย': const Color(0xFFFF9800),
+      'Live': const Color(0xFF2196F3),
+      'लाइव': const Color(0xFF2196F3),
+      'Running': const Color(0xFF9C27B0),
+      'चालू': const Color(0xFF9C27B0),
+    };
+
+    return statusColors[status] ?? const Color(0xFF4CAF50);
+  }
+
   Widget _buildFeatureCard(
     BuildContext context,
     String title,
@@ -220,23 +293,7 @@ class SahayakHomePage extends StatelessWidget {
     String status,
     VoidCallback? onTap,
   ) {
-    Color statusColor;
-    switch (status.toLowerCase()) {
-      case 'ready':
-        statusColor = const Color(0xFF4CAF50);
-        break;
-      case 'active':
-        statusColor = const Color(0xFFFF9800);
-        break;
-      case 'live':
-        statusColor = const Color(0xFF2196F3);
-        break;
-      case 'running':
-        statusColor = const Color(0xFF9C27B0);
-        break;
-      default:
-        statusColor = const Color(0xFF4CAF50);
-    }
+    Color statusColor = _getStatusColor(status);
 
     return GestureDetector(
       onTap: onTap,
