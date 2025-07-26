@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
 import 'pages/home_page.dart';
+import 'services/camera_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    // Initialize cameras when the app starts
+    await CameraService.initializeCameras();
+  } catch (e) {
+    print('Failed to initialize cameras: $e');
+  }
+
   runApp(const MyApp());
 }
 
