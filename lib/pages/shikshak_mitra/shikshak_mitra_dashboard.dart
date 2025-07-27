@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
+import 'video_generation_widget.dart';
 
 class ShikshakMitraDashboard extends StatefulWidget {
   const ShikshakMitraDashboard({super.key});
@@ -17,8 +17,6 @@ class _ShikshakMitraDashboardState extends State<ShikshakMitraDashboard>
   @override
   void initState() {
     super.initState();
-    // Initialize pulsing animation for status indicator (removed)
-
     // Initialize pulsing animation for green dots in subtitles
     _dotPulseController = AnimationController(
       duration: const Duration(milliseconds: 1500),
@@ -212,10 +210,6 @@ class _ShikshakMitraDashboardState extends State<ShikshakMitraDashboard>
           Expanded(
             child: _buildToggleButton('During Class', 'during'),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _buildToggleButton('Post-Class', 'post'),
-          ),
         ],
       ),
     );
@@ -255,63 +249,97 @@ class _ShikshakMitraDashboardState extends State<ShikshakMitraDashboard>
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        // Pulsing status indicator
-        _buildStatusIndicator(),
-        const SizedBox(height: 20),
-        // Phase-specific content
-        ..._buildPhaseContent(),
+        // Status indicator container with nested feature cards
+        _buildStatusIndicatorContainer(),
+        // Concept video container (only show for during class)
+        if (activePhase == 'during') ...[
+          const SizedBox(height: 20),
+          VideoGenerationWidget(colors: _getPhaseColors()),
+        ],
       ],
     );
   }
 
-  Widget _buildStatusIndicator() {
-    String statusText = _getStatusText();
+  Widget _buildStatusIndicatorContainer() {
+    final colors = _getPhaseColors();
+    String titleText = _getStatusTitle();
+    String subtitleText = _getStatusSubtitle();
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF4CAF50),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF4CAF50).withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: colors['background']!,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: colors['primary']!.withOpacity(0.2),
+          width: 1,
+        ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.check_circle,
-            color: Colors.white,
-            size: 24,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              statusText,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+          // Header section
+          Row(
+            children: [
+              Icon(
+                Icons.auto_awesome,
+                color: colors['primary']!,
+                size: 28,
               ),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      titleText,
+                      style: TextStyle(
+                        color: colors['primary']!,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitleText,
+                      style: TextStyle(
+                        color: colors['primary']!,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
+          const SizedBox(height: 20),
+          // Feature cards section
+          ..._buildPhaseContent(),
         ],
       ),
     );
   }
 
-  String _getStatusText() {
+  String _getStatusTitle() {
     switch (activePhase) {
       case 'pre':
-        return 'Auto-Running Background Tasks';
+        return 'Generate Pre Class Content';
       case 'during':
-        return 'Live Teaching Support';
-      case 'post':
-        return 'Student Tracking & Assessment';
+        return 'Generate Teaching Material';
       default:
         return 'AI Assistant Active';
+    }
+  }
+
+  String _getStatusSubtitle() {
+    switch (activePhase) {
+      case 'pre':
+        return 'AI-generated lesson planning and material prep';
+      case 'during':
+        return '';
+      default:
+        return 'Your AI Teaching Assistant';
     }
   }
 
@@ -327,11 +355,6 @@ class _ShikshakMitraDashboardState extends State<ShikshakMitraDashboard>
           'primary': const Color(0xFF2563EB),
           'background': const Color(0xFFDBEAFE),
         };
-      case 'post':
-        return {
-          'primary': const Color(0xFF9333EA),
-          'background': const Color(0xFFF3E8FF),
-        };
       default:
         return {
           'primary': const Color(0xFF2563EB),
@@ -346,8 +369,6 @@ class _ShikshakMitraDashboardState extends State<ShikshakMitraDashboard>
         return _buildPreClassContent();
       case 'during':
         return _buildDuringClassContent();
-      case 'post':
-        return _buildPostClassContent();
       default:
         return [];
     }
@@ -356,26 +377,28 @@ class _ShikshakMitraDashboardState extends State<ShikshakMitraDashboard>
   List<Widget> _buildPreClassContent() {
     return [
       _buildFeatureCard(
-        'Daily Lesson Scheduler',
+        'Daily Lesson Planner',
         'Updated with new curriculum changes',
         [
-          'Created 25 lesson plans across Math, Science, English',
-          'Aligned with curriculum standards',
-          'Optimized for your teaching schedule',
+          // 'Created 25 lesson plans across Math, Science, English',
+          // 'Aligned with curriculum standards',
+          // 'Optimized for your teaching schedule',
         ],
         Icons.schedule,
       ),
-      const SizedBox(height: 16),
+      const SizedBox(height: 8),
       _buildFeatureCard(
         'Material Preparation',
         'Preparing for today\'s classes',
         [
-          'Prepared worksheets for Grade 5 Math',
-          'Generated visual aids for Science lesson',
-          'Created assessment rubrics',
+          // 'Prepared worksheets for Grade 5 Math',
+          // 'Generated visual aids for Science lesson',
+          // 'Created assessment rubrics',
         ],
         Icons.library_books,
       ),
+      const SizedBox(height: 20),
+      _buildGenerateButton(),
     ];
   }
 
@@ -385,84 +408,37 @@ class _ShikshakMitraDashboardState extends State<ShikshakMitraDashboard>
         'BlackBoard Layout',
         'Mermaid diagrams ready',
         [
-          'Generated flowchart for water cycle',
-          'Created fraction visualization layout',
-          'Optimized board space usage',
+          // 'Generated flowchart for water cycle',
+          // 'Created fraction visualization layout',
+          // 'Optimized board space usage',
         ],
         Icons.dashboard,
       ),
-      const SizedBox(height: 16),
+      const SizedBox(height: 8),
       _buildFeatureCard(
         'Activity Suggestions',
         'Real-time recommendations',
         [
-          'Interactive game for Grade 3 (5 min)',
-          'Quick assessment for Grade 4 (3 min)',
-          'Discussion starter for Grade 5 (7 min)',
+          // 'Interactive game for Grade 3 (5 min)',
+          // 'Quick assessment for Grade 4 (3 min)',
+          // 'Discussion starter for Grade 5 (7 min)',
         ],
         Icons.sports_esports,
       ),
-      const SizedBox(height: 16),
+      const SizedBox(height: 8),
       _buildFeatureCard(
         'Contextual Content',
         'Photo-based assistance',
         [
-          'Click textbook page for explanations',
-          'Generate Manim animations',
-          'Hyper-local content suggestions',
-          'Video recommendations from internet',
+          // 'Click textbook page for explanations',
+          // 'Generate Manim animations',
+          // 'Hyper-local content suggestions',
+          // 'Video recommendations from internet',
         ],
         Icons.photo_camera,
       ),
-    ];
-  }
-
-  List<Widget> _buildPostClassContent() {
-    return [
-      _buildFeatureCard(
-        'Quiz Worksheets',
-        'Personalized for each student',
-        [
-          'Tailored quizzes (70% strong areas)',
-          'Next quiz focuses on weak areas (30%)',
-          'Multi-level auto-generation',
-        ],
-        Icons.quiz,
-      ),
-      const SizedBox(height: 16),
-      _buildFeatureCard(
-        'Exam Management',
-        'NCERT-based generation',
-        [
-          'Standard exam generation',
-          'OMR/OCR-based checking',
-          'Automated grading system',
-        ],
-        Icons.assignment,
-      ),
-      const SizedBox(height: 16),
-      _buildFeatureCard(
-        'Absentee Support',
-        'Video delivery system',
-        [
-          'Send beamer videos to absent students',
-          'Lesson summaries for catch-up',
-          'Parent notification system',
-        ],
-        Icons.video_library,
-      ),
-      const SizedBox(height: 16),
-      _buildFeatureCard(
-        'Sahayak AI Chat',
-        'Spontaneous learning support',
-        [
-          'Student curiosity questions',
-          'Current events discussions',
-          'Real-world connections',
-          'News-to-lesson integration',
-        ],
-        Icons.chat_bubble,
-      ),
+      const SizedBox(height: 20),
+      _buildGenerateButton(),
     ];
   }
 
@@ -473,112 +449,124 @@ class _ShikshakMitraDashboardState extends State<ShikshakMitraDashboard>
     IconData icon,
   ) {
     final colors = _getPhaseColors();
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 0),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: colors['primary']!.withOpacity(0.1),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header with icon and title
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: colors['background']!.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: colors['primary']!,
-                    size: 24,
-                  ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with icon and title
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: colors['background']!.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
+                child: Icon(
+                  icon,
+                  color: colors['primary']!,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
                       ),
-                      Row(
-                        children: [
-                          // Pulsing green dot
-                          AnimatedBuilder(
-                            animation: _dotPulseAnimation,
-                            builder: (context, child) {
-                              return Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF059669),
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF059669)
-                                          .withOpacity(
-                                              _dotPulseAnimation.value),
-                                      blurRadius: 4,
-                                      spreadRadius: 1,
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                          // Green subtitle text
-                          Expanded(
-                            child: Text(
-                              subtitle,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF059669),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        // Pulsing green dot
+                        AnimatedBuilder(
+                          animation: _dotPulseAnimation,
+                          builder: (context, child) {
+                            return Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF059669),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF059669)
+                                        .withOpacity(_dotPulseAnimation.value),
+                                    blurRadius: 3,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
                               ),
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 6),
+                        // Green subtitle text
+                        Expanded(
+                          child: Text(
+                            subtitle,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF059669),
                             ),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            // Bullet points
+              ),
+            ],
+          ),
+          // Bullet points (if any)
+          if (bulletPoints.isNotEmpty) ...[
+            const SizedBox(height: 12),
             ...bulletPoints.map((point) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.only(bottom: 6),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        margin: const EdgeInsets.only(top: 6),
-                        width: 6,
-                        height: 6,
+                        margin: const EdgeInsets.only(top: 4),
+                        width: 4,
+                        height: 4,
                         decoration: BoxDecoration(
                           color: colors['primary']!,
                           shape: BoxShape.circle,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           point,
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 11,
                             color: Colors.black87,
-                            height: 1.5,
+                            height: 1.4,
                           ),
                         ),
                       ),
@@ -586,6 +574,34 @@ class _ShikshakMitraDashboardState extends State<ShikshakMitraDashboard>
                   ),
                 )),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGenerateButton() {
+    final colors = _getPhaseColors();
+    return Center(
+      child: ElevatedButton(
+        onPressed: () {
+          // Handle generate button press
+          // TODO: Add generate functionality
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: colors['primary']!,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25),
+          ),
+          elevation: 2,
+        ),
+        child: const Text(
+          'Generate',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
