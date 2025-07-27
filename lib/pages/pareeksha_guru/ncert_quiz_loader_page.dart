@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'quiz_swipe_page.dart';
 
 class NCERTQuizLoaderPage extends StatefulWidget {
@@ -15,6 +17,7 @@ class _NCERTQuizLoaderPageState extends State<NCERTQuizLoaderPage>
     with TickerProviderStateMixin {
   int currentMessageIndex = 0;
   Timer? messageTimer;
+  Map<String, dynamic>? apiResponse;
 
   late AnimationController _fadeController;
   late AnimationController _progressController;
@@ -39,7 +42,7 @@ class _NCERTQuizLoaderPageState extends State<NCERTQuizLoaderPage>
     );
 
     _progressController = AnimationController(
-      duration: const Duration(seconds: 10),
+      duration: const Duration(seconds: 15),
       vsync: this,
     );
 
@@ -66,7 +69,7 @@ class _NCERTQuizLoaderPageState extends State<NCERTQuizLoaderPage>
     _fadeController.forward();
     _progressController.forward();
 
-    messageTimer = Timer.periodic(const Duration(milliseconds: 2000), (timer) {
+    messageTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
       if (currentMessageIndex < loadingMessages.length - 1) {
         setState(() {
           currentMessageIndex++;
@@ -76,21 +79,51 @@ class _NCERTQuizLoaderPageState extends State<NCERTQuizLoaderPage>
         _fadeController.forward();
       } else {
         timer.cancel();
-        // Navigate to quiz after final message
-        Future.delayed(const Duration(milliseconds: 1500), () {
-          if (mounted) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => QuizSwipePage(
-                  quizData: widget.quizData,
-                ),
-              ),
-            );
-          }
-        });
       }
     });
+
+    // Make API call immediately
+    _makeAPICall();
+    
+    // Navigate after exactly 15 seconds
+    Timer(const Duration(seconds: 15), () {
+      if (mounted) {
+        final quizDataWithAPI = Map<String, String>.from(widget.quizData);
+        if (apiResponse != null) {
+          quizDataWithAPI['apiResponse'] = json.encode(apiResponse);
+        }
+        
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => QuizSwipePage(
+              quizData: quizDataWithAPI,
+            ),
+          ),
+        );
+      }
+    });
+  }
+
+  Future<void> _makeAPICall() async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://mcf0c3q9-4000.inc1.devtunnels.ms/api/v1/shikshak-mitra/generation-questions'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'question': 'Generate questions related to ${widget.quizData['chapter']}'
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        setState(() {
+          apiResponse = responseData;
+        });
+      }
+    } catch (e) {
+      print('API Error: $e');
+    }
   }
 
   @override
@@ -237,8 +270,6 @@ class _NCERTQuizLoaderPageState extends State<NCERTQuizLoaderPage>
                               'Subject', widget.quizData['subject']!),
                           _buildDetailRow(
                               'Chapter', widget.quizData['chapter']!),
-                          _buildDetailRow(
-                              'Questions', widget.quizData['questions']!),
                         ],
                       ),
                     ),
