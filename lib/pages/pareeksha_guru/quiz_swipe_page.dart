@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'quiz_summary_page.dart';
 
 class QuizSwipePage extends StatefulWidget {
@@ -77,17 +78,30 @@ class _QuizSwipePageState extends State<QuizSwipePage>
   }
 
   void _generateQuestions() {
-    int numQuestions = int.parse(widget.quizData['questions']!);
     String subject = widget.quizData['subject']!;
     String chapter = widget.quizData['chapter']!;
-
-    // Sample questions based on subject
-    List<Map<String, dynamic>> sampleQuestions =
-        _getSampleQuestions(subject, chapter);
-
-    // Shuffle and take required number
-    sampleQuestions.shuffle();
-    questions = sampleQuestions.take(numQuestions).toList();
+    
+    // Parse API response
+    if (widget.quizData.containsKey('apiResponse')) {
+      final apiData = json.decode(widget.quizData['apiResponse']!);
+      final questionsData = apiData['questions'] as Map<String, dynamic>;
+      
+      questions = questionsData.entries.map((entry) {
+        final questionData = entry.value as Map<String, dynamic>;
+        return {
+          'topic': questionData['topic'] ?? '',
+          'question': questionData['question'] ?? '',
+          'subject': subject,
+          'chapter': chapter,
+        };
+      }).toList();
+    } else {
+      // Fallback to sample questions
+      List<Map<String, dynamic>> sampleQuestions =
+          _getSampleQuestions(subject, chapter);
+      questions = sampleQuestions.take(5).toList();
+    }
+    
     likedQuestions = List.filled(questions.length, false);
   }
 
@@ -251,7 +265,6 @@ class _QuizSwipePageState extends State<QuizSwipePage>
       if (currentQuestionIndex < questions.length - 1) {
         setState(() {
           currentQuestionIndex++;
-          selectedAnswer = null;
           _isSwipeCompleted = false;
           _dragDistance = 0.0;
         });
@@ -487,7 +500,7 @@ class _QuizSwipePageState extends State<QuizSwipePage>
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              '${question['subject']} • ${question['chapter']}',
+              question['topic'] ?? '${question['subject']} • ${question['chapter']}',
               style: const TextStyle(
                 color: Color(0xFF6B73FF),
                 fontSize: 12,
@@ -499,30 +512,22 @@ class _QuizSwipePageState extends State<QuizSwipePage>
           const SizedBox(height: 24),
 
           // Question
-          Text(
-            question['question'],
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-              height: 1.4,
+          Expanded(
+            child: Center(
+              child: Text(
+                question['question'],
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
           ),
 
           const SizedBox(height: 32),
-
-          // Options
-          Expanded(
-            child: Column(
-              children: List.generate(
-                question['options'].length,
-                (index) => _buildOptionButton(
-                  question['options'][index],
-                  index,
-                ),
-              ),
-            ),
-          ),
 
           // Swipe Instructions
           const Center(
@@ -539,68 +544,4 @@ class _QuizSwipePageState extends State<QuizSwipePage>
     );
   }
 
-  Widget _buildOptionButton(String option, int index) {
-    bool isSelected = selectedAnswer == option;
-
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor:
-              isSelected ? const Color(0xFF6B73FF) : Colors.grey[100],
-          foregroundColor: isSelected ? Colors.white : Colors.black87,
-          padding: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(
-              color:
-                  isSelected ? const Color(0xFF6B73FF) : Colors.grey.shade300,
-            ),
-          ),
-          elevation: 0,
-        ),
-        onPressed: () {
-          setState(() {
-            selectedAnswer = option;
-          });
-        },
-        child: Row(
-          children: [
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isSelected ? Colors.white : Colors.transparent,
-                border: Border.all(
-                  color: isSelected ? Colors.white : Colors.grey,
-                ),
-              ),
-              child: Center(
-                child: Text(
-                  String.fromCharCode(65 + index), // A, B, C, D
-                  style: TextStyle(
-                    color: isSelected ? const Color(0xFF6B73FF) : Colors.grey,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                option,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

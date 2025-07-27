@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'ncert_quiz_loader_page.dart';
 
 class NCERTQuizSelectionPage extends StatefulWidget {
@@ -12,7 +14,6 @@ class _NCERTQuizSelectionPageState extends State<NCERTQuizSelectionPage> {
   String? selectedClass;
   String? selectedSubject;
   String? selectedChapter;
-  String? selectedQuestions;
 
   final Map<String, Map<String, List<String>>> chaptersData = {
     '3': {
@@ -196,17 +197,6 @@ class _NCERTQuizSelectionPageState extends State<NCERTQuizSelectionPage> {
                         });
                       },
                     ),
-                    const SizedBox(height: 20),
-                    _buildDropdown(
-                      'Number of Questions',
-                      selectedQuestions,
-                      ['10', '20'],
-                      (value) {
-                        setState(() {
-                          selectedQuestions = value;
-                        });
-                      },
-                    ),
                     const SizedBox(height: 40),
                     SizedBox(
                       width: double.infinity,
@@ -305,8 +295,7 @@ class _NCERTQuizSelectionPageState extends State<NCERTQuizSelectionPage> {
   bool _isFormValid() {
     return selectedClass != null &&
         selectedSubject != null &&
-        selectedChapter != null &&
-        selectedQuestions != null;
+        selectedChapter != null;
   }
 
   void _generateQuiz() {
@@ -318,7 +307,6 @@ class _NCERTQuizSelectionPageState extends State<NCERTQuizSelectionPage> {
             'class': selectedClass!,
             'subject': selectedSubject!,
             'chapter': selectedChapter!,
-            'questions': selectedQuestions!,
           },
         ),
       ),
