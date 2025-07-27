@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'video_player_page.dart';
 
 class VideoGenerationWidget extends StatefulWidget {
   final Map<String, Color> colors;
@@ -17,6 +20,7 @@ class _VideoGenerationWidgetState extends State<VideoGenerationWidget>
   // Video generation state
   bool isGeneratingVideo = false;
   bool videoGenerated = false;
+  String? generatedVideoUrl;
 
   // Shimmer animation for loading
   late AnimationController _shimmerController;
@@ -216,6 +220,10 @@ class _VideoGenerationWidgetState extends State<VideoGenerationWidget>
   }
 
   Future<void> _startVideoGeneration() async {
+    // Show prompt dialog first
+    final prompt = await _showPromptDialog();
+    if (prompt == null || prompt.isEmpty) return;
+
     setState(() {
       isGeneratingVideo = true;
       _currentMessageIndex = 0;
@@ -228,32 +236,167 @@ class _VideoGenerationWidgetState extends State<VideoGenerationWidget>
       print('Error starting shimmer animation: $e');
     }
 
-    // Cycle through loading messages
-    for (int i = 0; i < _loadingMessages.length; i++) {
-      setState(() {
-        _currentMessageIndex = i;
-      });
-      await Future.delayed(const Duration(seconds: 2));
-    }
-
-    // Stop shimmer animation
     try {
-      _shimmerController.stop();
-    } catch (e) {
-      print('Error stopping shimmer animation: $e');
-    }
+      // Call API to generate video
+      final videoUrl = await _generateVideoFromAPI(prompt);
 
-    // Initialize video completion
-    await _initializeVideo();
+      // Cycle through loading messages
+      for (int i = 0; i < _loadingMessages.length; i++) {
+        setState(() {
+          _currentMessageIndex = i;
+        });
+        await Future.delayed(const Duration(seconds: 2));
+      }
+
+      // Stop shimmer animation
+      try {
+        _shimmerController.stop();
+      } catch (e) {
+        print('Error stopping shimmer animation: $e');
+      }
+
+      // Initialize video completion with the generated URL
+      await _initializeVideo(videoUrl);
+    } catch (e) {
+      // Handle error
+      try {
+        _shimmerController.stop();
+      } catch (e) {
+        print('Error stopping shimmer animation: $e');
+      }
+
+      setState(() {
+        isGeneratingVideo = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error generating video: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
-  Future<void> _initializeVideo() async {
+  Future<String> _generateVideoFromAPI(String prompt) async {
+    final response = await http.post(
+      Uri.parse(
+          'https://mcf0c3q9-4000.inc1.devtunnels.ms/api/v1/shikshak-mitra/generate-animation'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'prompt': prompt}),
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      final videoUrl = responseData['public_video_url'] as String?;
+
+      if (videoUrl != null && videoUrl.isNotEmpty) {
+        return videoUrl;
+      } else {
+        throw Exception('No video URL received from API');
+      }
+    } else {
+      throw Exception('Failed to generate video: ${response.statusCode}');
+    }
+  }
+
+  Future<String?> _showPromptDialog() {
+    final TextEditingController controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.edit,
+                color: widget.colors['primary']!,
+                size: 24,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Enter Prompt',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Enter the concept or topic you want to generate a video for:',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: 'e.g., Explain the water cycle process',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: widget.colors['primary']!,
+                      width: 2,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(controller.text);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: widget.colors['primary']!,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text('Generate'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _initializeVideo(String videoUrl) async {
     // Simulate video generation completion
     await Future.delayed(const Duration(milliseconds: 500));
 
     setState(() {
       isGeneratingVideo = false;
       videoGenerated = true;
+      generatedVideoUrl = videoUrl;
     });
 
     // Show success message
@@ -347,8 +490,7 @@ class _VideoGenerationWidgetState extends State<VideoGenerationWidget>
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: widget.colors['primary']!.withOpacity(0.2),
-          width: 2,
-          style: BorderStyle.solid,
+          width: 1,
         ),
       ),
       child: Column(
@@ -377,16 +519,30 @@ class _VideoGenerationWidgetState extends State<VideoGenerationWidget>
             ),
           ),
           const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            decoration: BoxDecoration(
-              color: widget.colors['primary']!,
-              borderRadius: BorderRadius.circular(20),
+          ElevatedButton.icon(
+            onPressed: () {
+              if (generatedVideoUrl != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        VideoPlayerPage(videoUrl: generatedVideoUrl!),
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: widget.colors['primary']!,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
             ),
-            child: const Text(
-              'Video Ready',
+            icon: const Icon(Icons.play_arrow, size: 18),
+            label: const Text(
+              'View Video',
               style: TextStyle(
-                color: Colors.white,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
